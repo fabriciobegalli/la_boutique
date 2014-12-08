@@ -1,0 +1,12 @@
+/*--------------
+| Add your custom CSS rules to this file
+| Make sure to back this file up before updating your theme!
+--------------*/
+.help-block-error {
+    color: red;
+    font-size: 12px;
+}
+
+.checkbox {
+    display: inline-block;
+}
