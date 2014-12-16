@@ -169,15 +169,6 @@ $(document).ready(function() {
 	});
 	(function() {
 		var $tweets = $('#tweets');
-		
-		$tweets.tweet({
-			username: $tweets.data('username'),
-			favorites: false,
-			retweets: false, 
-			count: 1,
-			avatar_size: 60,
-			template: '<div class="tweet"><div class="avatar">{avatar}</div><div class="text">{text}{time}</div></div>'
-		});
 
 	})();
 	

@@ -5,7 +5,6 @@ namespace app\models;
 use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use app\models\CategoryModel;
 
 /**
  * CategorySearchModel represents the model behind the search form about `app\models\CategoryModel`.
@@ -51,11 +50,18 @@ class CategorySearchModel extends CategoryModel
             return $dataProvider;
         }
 
+
         $query->andFilterWhere([
             'id' => $this->id,
         ]);
 
+
         $query->andFilterWhere(['like', 'name', $this->name]);
+
+
+        $query->orderBy([
+            'id' => SORT_ASC
+        ]);
 
         return $dataProvider;
     }

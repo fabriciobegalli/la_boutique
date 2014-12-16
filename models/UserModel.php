@@ -3,77 +3,33 @@
 namespace app\models;
 
 use Yii;
+use yii\db\ActiveRecord;
 use yii\web\IdentityInterface;
 
 /**
- * This is the model class for table "users".
+ * This is the model class for table "user".
  *
  * @property integer $id
- * @property string $email
  * @property string $name
+ * @property string $email
  * @property string $phone
  * @property string $password
- * @property string role
- * @property string auth_key
+ * @property string $registretionDate
+ *
+ * @property ProductModel[] $products
  * @property OrderModel[] $orders
  */
-class UserModel extends \yii\db\ActiveRecord implements IdentityInterface
+class UserModel extends ActiveRecord implements IdentityInterface
 {
 
-    public $auth_key;
-    /**
-     * Finds an identity by the given ID.
-     *
-     * @param string|integer $id the ID to be looked for
-     * @return IdentityInterface|null the identity object that matches the given ID.
-     */
-    public static function findIdentity($id)
-    {
-        return static::findOne($id);
-    }
-
-    /**
-     * Finds an identity by the given token.
-     *
-     * @param string $token the token to be looked for
-     * @return IdentityInterface|null the identity object that matches the given token.
-     */
-    public static function findIdentityByAccessToken($token, $type = null)
-    {
-        return static::findOne(['access_token' => $token]);
-    }
+    public $group = 'user';
 
     /**
      * @inheritdoc
      */
     public static function tableName()
     {
-        return 'users';
-    }
-
-    /**
-     * @return int|string current user ID
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    /**
-     * @param string $authKey
-     * @return boolean if auth key is valid for current user
-     */
-    public function validateAuthKey($authKey)
-    {
-        return $this->getAuthKey() === $authKey;
-    }
-
-    /**
-     * @return string current user auth key
-     */
-    public function getAuthKey()
-    {
-        return $this->auth_key;
+        return 'user';
     }
 
     /**
@@ -82,16 +38,14 @@ class UserModel extends \yii\db\ActiveRecord implements IdentityInterface
     public function rules()
     {
         return [
-            [['email', 'name', 'phone'], 'required'],
-            [['email', 'name'], 'string', 'max' => 1000],
-            ['email', 'email'],
-            ['email', 'unique'],
-            ['role', 'number'],
-            ['password', 'required', 'on' => 'create'],
-            ['phone', 'match', 'pattern' => '/\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/'],
-            ['password', 'match', 'pattern' => '/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,10}$/', 'when' => function ($model) {
-                return !empty($model->password);
-            }]
+            [['name', 'email', 'phone', 'password'], 'required'],
+            [['registretionDate'], 'safe'],
+            [['name'], 'string', 'max' => 20],
+            [['email'], 'string', 'max' => 100],
+            [['phone'], 'match', 'pattern' => '/\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/'],
+            [['password'], 'string', 'max' => 32],
+
+            ['email', 'email', 'message' => 'Enter valid email'],
         ];
     }
 
@@ -101,13 +55,22 @@ class UserModel extends \yii\db\ActiveRecord implements IdentityInterface
     public function attributeLabels()
     {
         return [
-            'id' => 'ID',
-            'email' => 'Email',
+            'id' => 'Id',
             'name' => 'Name',
+            'email' => 'Email',
             'phone' => 'Phone',
             'password' => 'Password',
-            'role' => 'Is Admin'
+            'registretiondate' => 'Registration date',
         ];
+    }
+
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getProducts()
+    {
+        return $this->hasMany(ProductModel::className(), ['id' => 'productId'])->viaTable('{order}', ['userId' => 'id']);
     }
 
     /**
@@ -115,26 +78,45 @@ class UserModel extends \yii\db\ActiveRecord implements IdentityInterface
      */
     public function getOrders()
     {
-        return $this->hasMany(OrderModel::className(), ['user_id' => 'id']);
+        return $this->hasMany(OrderModel::className(), ['userId' => 'id']);
     }
 
-    public function beforeSave($insert)
+    public static function findByEmail($email)
     {
-        if ($insert) {
-            $this->password = md5($this->password);
-        } else {
-            if ($this->password == '') {
-                unset($this->password);
-            } else {
-                $this->password = md5($this->password . 'sflprt49fhi2');
-            }
-        }
-        if (parent::beforeSave($insert)) {
-            if ($this->isNewRecord) {
-                $this->auth_key = Yii::$app->getSecurity()->generateRandomString();
-            }
-            return true;
-        }
-        return false;
+        $user = UserModel::find()->where(['email' => $email])->one();
+        return $user;
+    }
+
+    public function validatePassword($password)
+    {
+        Yii::info($this->password == md5($password));
+        return $this->password == md5($password);
+    }
+
+    public static function findIdentity($id)
+    {
+        $identity = UserModel::find()->where(['id' => $id])->one();
+        return $identity;
+    }
+
+    public static function findIdentityByAccessToken($token, $type = null)
+    {
+        $identity = UserModel::find()->where(['password' => $token])->where(['active' => 1])->one();
+        return $identity;
+    }
+
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    public function getAuthKey()
+    {
+        return $this->email;
+    }
+
+    public function validateAuthKey($authKey)
+    {
+        return $this->email === $authKey;
     }
 }

@@ -3,20 +3,22 @@
 namespace app\models;
 
 use Yii;
+use yii\db\ActiveRecord;
 
 /**
  * This is the model class for table "order".
  *
  * @property integer $id
- * @property string $code
- * @property integer $status
- * @property integer $user_id
+ * @property integer $userId
+ * @property string $date
+ * @property integer $cost
+ * @property boolean $completed
  *
- * @property Users $user
- * @property OrderedProducts[] $orderedProducts
- * @property Products[] $products
+ * @property UserModel $user
+ * @property OrderListItemModel[] $orderListItems
+ * @property ProductModel[] $products
  */
-class OrderModel extends \yii\db\ActiveRecord
+class OrderModel extends ActiveRecord
 {
     /**
      * @inheritdoc
@@ -32,9 +34,11 @@ class OrderModel extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['code', 'status', 'user_id'], 'required'],
-            [['status', 'user_id'], 'integer'],
-            [['code'], 'string', 'max' => 1000]
+            [['userId', 'cost'], 'required'],
+            [['userId', 'cost'], 'integer'],
+            [['date'], 'safe'],
+            [['completed'], 'boolean'],
+            ['cost', 'match', 'pattern' => '/^[0-9]+([.]([0-9]){1,2})?$/', 'message' => 'Please, enter a valid price'],
         ];
     }
 
@@ -44,10 +48,11 @@ class OrderModel extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'id' => 'ID',
-            'code' => 'Code',
-            'status' => 'Status',
-            'user_id' => 'User ID',
+            'id' => 'Id',
+            'userId' => 'User Id',
+            'date' => 'Date',
+            'cost' => 'Cost',
+            'completed' => 'Completed'
         ];
     }
 
@@ -56,15 +61,15 @@ class OrderModel extends \yii\db\ActiveRecord
      */
     public function getUser()
     {
-        return $this->hasOne(Users::className(), ['id' => 'user_id']);
+        return $this->hasOne(UserModel::className(), ['id' => 'userId']);
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getOrderedProducts()
+    public function getOrderListItems()
     {
-        return $this->hasMany(OrderedProducts::className(), ['order_id' => 'id']);
+        return $this->hasMany(OrderListItemModel::className(), ['orderId' => 'id']);
     }
 
     /**
@@ -72,6 +77,6 @@ class OrderModel extends \yii\db\ActiveRecord
      */
     public function getProducts()
     {
-        return $this->hasMany(Products::className(), ['id' => 'products_id'])->viaTable('ordered_products', ['order_id' => 'id']);
+        return $this->hasMany(ProductModel::className(), ['id' => 'productId'])->viaTable('{orderlistitem}', ['id' => 'orderId']);
     }
 }

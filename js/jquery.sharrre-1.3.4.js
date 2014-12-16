@@ -226,7 +226,7 @@
           li.src = '//platform.stumbleupon.com/1/widgets.js'; 
           var s = document.getElementsByTagName('script')[0];s.parentNode.insertBefore(li, s);
         })();
-        s = window.setTimeout(function(){
+        var s = window.setTimeout(function(){
           if(typeof STMBLPN !== 'undefined'){
             STMBLPN.processWidgets();
             clearInterval(s);
@@ -270,7 +270,7 @@
     googlePlus: function(){},
     facebook: function(){
       //console.log('facebook');
-      fb = window.setInterval(function(){
+      var fb = window.setInterval(function(){
         if (typeof FB !== 'undefined') {
           FB.Event.subscribe('edge.create', function(targetUrl) {
             _gaq.push(['_trackSocial', 'facebook', 'like', targetUrl]);
@@ -288,7 +288,7 @@
     },
     twitter: function(){
       //console.log('twitter');
-      tw = window.setInterval(function(){
+      var tw = window.setInterval(function(){
         if (typeof twttr !== 'undefined') {
           twttr.events.bind('tweet', function(event) {
             if (event) {
@@ -489,7 +489,7 @@
   Plugin.prototype.rendererPerso = function () {
     //check if this is the last social website to launch render
     var shareCount = 0;
-    for (e in this.options.count) { shareCount++; }
+    for (var e in this.options.count) { shareCount++; }
     if(shareCount === this.options.shareTotal){
       this.options.render(this, this.options);
     }

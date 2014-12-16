@@ -2,11 +2,57 @@
 | Add your custom CSS rules to this file
 | Make sure to back this file up before updating your theme!
 --------------*/
-.help-block-error {
+.help-block-error, .col-lg-3 .help-block {
     color: red;
     font-size: 12px;
 }
 
 .checkbox {
     display: inline-block;
+}
+
+/* centered columns styles */
+.row-centered {
+    text-align: center;
+}
+
+.col-centered {
+    display: inline-block;
+    float: none;
+    /* reset the text-align */
+    text-align: left;
+    /* inline-block space fix */
+    margin-right: -4px;
+}
+
+.btn-success {
+    background-color: #1abc9c !important;
+}
+
+#static-page > .row-fluid > .span2 {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background-color: #fbfbf9;
+    border-right: 1px solid #e3e3e3;
+}
+@media (max-width: 767px) {
+    #static-page > .row-fluid > .span2 {
+        position: static;
+        top: auto;
+        bottom: auto;
+    }
+}
+#static-page > .row-fluid > .span10 {
+    margin-left: 15.641%;
+    min-height: 600px;
+}
+
+@media (max-width: 767px) {
+    #static-page > .row-fluid > .span10 {
+        margin-left: 0;
+    }
+}
+.main{
+    min-height: 500px;
 }

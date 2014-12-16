@@ -2,26 +2,20 @@
 
 $params = require(__DIR__ . '/params.php');
 
-
 $config = [
     'id' => 'basic',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
-    'modules' => [
-        'admin' => [
-            'class' => 'app\module\admin\Module',
-        ],
-    ],
     'components' => [
         'request' => [
-            'enableCookieValidation' => true,
-            'cookieValidationKey' => '12345',
+            // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
+            'cookieValidationKey' => 'JlZrlXMNR0xNTv7GDD-wuWLvl810jZwB',
         ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
         ],
         'user' => [
-            'identityClass' => 'app\models\UserModel',
+            'identityClass' => 'app\models\User',
             'enableAutoLogin' => true,
         ],
         'errorHandler' => [
@@ -43,18 +37,28 @@ $config = [
                 ],
             ],
         ],
+        'db' => require(__DIR__ . '/db.php'),
         'urlManager' => [
+            'enablePrettyUrl' => true,
             'showScriptName' => false,
-            'enablePrettyUrl' => true
+            'rules' => [
+                // your rules go here
+            ],
         ],
         'authManager' => [
             'class' => 'yii\rbac\PhpManager',
-            'defaultRoles' => ['admin', 'user'],
+            'defaultRoles' => ['admin', 'user'], 
         ],
-        'db' => require(__DIR__ . '/db.php'),
     ],
+    'modules' => [
+            'admin' => [
+                'class' => 'app\modules\admin\Admin',
+            ],
+            'user' => [
+                'class' => 'app\modules\user\User',
+            ],
+        ],
     'params' => $params,
-
 ];
 
 if (YII_ENV_DEV) {

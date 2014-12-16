@@ -3,21 +3,25 @@
 namespace app\models;
 
 use Yii;
+use yii\db\ActiveRecord;
 
 /**
- * This is the model class for table "categories".
+ * This is the model class for table "category".
  *
  * @property integer $id
  * @property string $name
+ *
+ * @property AttributeModel[] $attributes
+ * @property ProductModel[] $products
  */
-class CategoryModel extends \yii\db\ActiveRecord
+class CategoryModel extends ActiveRecord
 {
     /**
      * @inheritdoc
      */
     public static function tableName()
     {
-        return 'categories';
+        return 'category';
     }
 
     /**
@@ -27,7 +31,9 @@ class CategoryModel extends \yii\db\ActiveRecord
     {
         return [
             [['name'], 'required'],
-            [['name'], 'string', 'max' => 1000]
+            [['name'], 'string', 'max' => 20],
+            [['name'], 'unique'],
+            ['name', 'match', 'pattern' => '/[a-zA-Zа-яА-Я][a-zA-Zа-яА-Я\\s-]+$/', 'message' => 'Please, enter valid name'],
         ];
     }
 
@@ -37,8 +43,24 @@ class CategoryModel extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'id' => 'ID',
+            'id' => 'Id',
             'name' => 'Name',
         ];
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getAttributes()
+    {
+        return $this->hasMany(AttributeModel::className(), ['id' => 'id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getProducts()
+    {
+        return $this->hasMany(ProductModel::className(), ['id' => 'id']);
     }
 }

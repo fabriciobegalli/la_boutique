@@ -3,29 +3,34 @@
 namespace app\models;
 
 use Yii;
+use yii\db\ActiveRecord;
 
 /**
- * This is the model class for table "products".
+ * This is the model class for table "product".
  *
  * @property integer $id
- * @property string $description
  * @property string $name
+ * @property string $description
+ * @property string $price
+ * @property integer $quantity
  * @property string $photo
- * @property integer $category_id
+ * @property integer $categoryId
  *
- * @property OrderedProducts[] $orderedProducts
- * @property Order[] $orders
- * @property ProductAttributes[] $productAttributes
- * @property Attributes[] $attributes
+ * @property User[] $users
+ * @property OrderListItemModel[] $orderListItems
+ * @property OrderModel[] $order
+ * @property CategoryModel $category
+ * @property ProductAttributeModel[] $productAttributes
+ * @property AttributeModel[] $attributes
  */
-class ProductModel extends \yii\db\ActiveRecord
+class ProductModel extends ActiveRecord
 {
     /**
      * @inheritdoc
      */
     public static function tableName()
     {
-        return 'products';
+        return 'product';
     }
 
     /**
@@ -34,10 +39,11 @@ class ProductModel extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['description', 'name', 'photo', 'category_id'], 'required'],
-            [['description'], 'string'],
-            [['category_id'], 'integer'],
-            [['name', 'photo'], 'string', 'max' => 1000]
+            [['id', 'name', 'price', 'quantity', 'categoryId'], 'required'],
+            [['id', 'quantity', 'categoryId'], 'integer'],
+            [['price'], 'match', 'pattern' => '/^[0-9]+([.]([0-9]){1,2})?$/', 'message' => 'Please, enter a valid price'],
+            [['name',], 'string', 'max' => 30],
+            [['description'], 'string', 'max' => 1000]
         ];
     }
 
@@ -47,20 +53,22 @@ class ProductModel extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'id' => 'ID',
-            'description' => 'Description',
+            'id' => 'Id',
             'name' => 'Name',
+            'description' => 'Description',
+            'price' => 'Price',
+            'quantity' => 'Quantity',
             'photo' => 'Photo',
-            'category_id' => 'Category ID',
+            'categoryId' => 'Category Id',
         ];
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getOrderedProducts()
+    public function getOrderListItems()
     {
-        return $this->hasMany(OrderedProducts::className(), ['products_id' => 'id']);
+        return $this->hasMany(OrderListItemModel::className(), ['productId' => 'id']);
     }
 
     /**
@@ -68,7 +76,15 @@ class ProductModel extends \yii\db\ActiveRecord
      */
     public function getOrders()
     {
-        return $this->hasMany(Order::className(), ['id' => 'order_id'])->viaTable('ordered_products', ['products_id' => 'id']);
+        return $this->hasMany(OrderModel::className(), ['id' => 'orderId'])->viaTable('{orderlistitem}', ['productId' => 'id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getCategory()
+    {
+        return $this->hasOne(CategoryModel::className(), ['id' => 'categoryId']);
     }
 
     /**
@@ -76,7 +92,7 @@ class ProductModel extends \yii\db\ActiveRecord
      */
     public function getProductAttributes()
     {
-        return $this->hasMany(ProductAttributes::className(), ['products_id' => 'id']);
+        return $this->hasMany(ProductAttributeModel::className(), ['productId' => 'id']);
     }
 
     /**
@@ -84,6 +100,24 @@ class ProductModel extends \yii\db\ActiveRecord
      */
     public function getAttributes()
     {
-        return $this->hasMany(Attributes::className(), ['id' => 'attributes_id'])->viaTable('product_attributes', ['products_id' => 'id']);
+        return $this->hasMany(AttributeModel::className(), ['id' => 'attributeId'])->viaTable('productAttributes', ['productId' => 'id']);
+    }
+
+    public function createAttributes()
+    {
+        $attributes = AttributeModel::find()->where(['categoryId' => $this->categoryId])->all();
+        for ($i = 0; $i < count($attributes); $i++) {
+            $productAttribute = new ProductAttributeModel();
+            $productAttribute->productId = $this->id;
+            $productAttribute->value = " ";
+            $productAttribute->attributeId = $attributes[$i]->id;
+            Yii::info($productAttribute->productId . "  " . $productAttribute->value . "  " . $productAttribute->attributeId);
+            $productAttribute->insert(false);
+        }
+    }
+
+    public static function findMaxPrice($categoryId)
+    {
+        return ProductModel::find()->where(['categoryId' => $categoryId])->max('price');
     }
 }
