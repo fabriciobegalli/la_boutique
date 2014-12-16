@@ -15,8 +15,13 @@ if ($ptDataProvider != null) {
     echo GridView::widget([
         'dataProvider' => $ptDataProvider,
         'columns' => [
-            'id',
-            'name',
+            [
+                'attribute' => 'name',
+                'format' => 'raw',
+                'value' => function ($model) {
+                    return Html::a($model['name'], Yii::$app->homeUrl . 'user/catalog/view?id=' . $model['id']);
+                },
+            ],
             'price',
             [
                 'attribute' => 'Quantity',
